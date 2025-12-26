@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import SlideNavbar from '../components/SlideNavbar';
 import StudentSettings from '../components/StudentSettings';
 import api from '../api/axios';
+import { useLoading } from '../context/LoadingContext';
+import Loader from '../components/Loader';
 
 const StudentSettingsPage = () => {
+    const { startLoading, stopLoading } = useLoading();
     const [user, setUser] = useState(null);
     const [stats, setStats] = useState({ total: 0, solved: 0, pending: 0 });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
+            startLoading();
             try {
                 // Determine role first
                 // Assuming role is stored or we can check via /auth/me result if consistent, 
@@ -36,6 +41,9 @@ const StudentSettingsPage = () => {
 
             } catch (error) {
                 console.error("Failed to fetch settings data", error);
+            } finally {
+                setLoading(false);
+                stopLoading();
             }
         };
 
@@ -52,7 +60,7 @@ const StudentSettingsPage = () => {
 
     return (
         <SlideNavbar>
-            <StudentSettings user={user} stats={stats} onLogout={handleLogout} />
+            {loading ? <Loader /> : <StudentSettings user={user} stats={stats} onLogout={handleLogout} />}
         </SlideNavbar>
     );
 };

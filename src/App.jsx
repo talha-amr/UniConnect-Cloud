@@ -10,24 +10,27 @@ import AdminAccounts from './Pages/AdminAccounts';
 import StudentComplaintPage from './Pages/StudentComplaintPage';
 import StudentSettingsPage from './Pages/StudentSettingsPage';
 import StaffAssignedComplaintPage from './Pages/StaffAssignedComplaintPage';
+import { LoadingProvider } from './context/LoadingContext';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/adminDash" element={<AdminDashboard />} />
-        <Route path="/adminAccounts" element={<AdminAccounts />} />
-        <Route path="/student" element={<StudentDashboard />} />
-        <Route path="/student-complaints" element={<StudentComplaintPage />} />
-        <Route path="/settings" element={<StudentSettingsPage />} />
-        <Route path="/staff" element={<StaffDashboard />} />
-        <Route path="/staff/assigned-complaints" element={<StaffAssignedComplaintPage />} />
-        <Route path="/adminComplaint" element={<AdminComplaintPage />} />
-      </Routes>
-    </BrowserRouter>
+    <LoadingProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/adminDash" element={<AdminDashboard />} />
+          <Route path="/adminAccounts" element={<AdminAccounts />} />
+          <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/student-complaints" element={<StudentComplaintPage />} />
+          <Route path="/settings" element={<StudentSettingsPage />} />
+          <Route path="/staff" element={<StaffDashboard />} />
+          <Route path="/staff/assigned-complaints" element={<StaffAssignedComplaintPage />} />
+          <Route path="/adminComplaint" element={<AdminComplaintPage />} />
+        </Routes>
+      </BrowserRouter>
+    </LoadingProvider>
   );
 }
 

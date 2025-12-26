@@ -18,7 +18,7 @@ Category.hasMany(Complaint, { foreignKey: 'Category_ID' });
 Complaint.belongsTo(Category, { foreignKey: 'Category_ID' });
 
 // Category has many CategoryNames
-Category.hasMany(CategoryName, { foreignKey: 'Category_ID' });
+Category.hasOne(CategoryName, { foreignKey: 'Category_ID' });
 CategoryName.belongsTo(Category, { foreignKey: 'Category_ID' });
 
 // Staff Assignments (Many-to-Many: Staff <-> Complaint)

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Scatter, Doughnut, Pie, Bar } from "react-chartjs-2";
 import api from "../api/axios"; // Import our configured axios client
+import { useLoading } from '../context/LoadingContext';
+import Loader from './Loader';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,6 +28,8 @@ const AdminDash = () => {
   // State for live data
   // State for live data - initialized with dummy data to preserve layout
   /* Refactored AdminDash with correct data mapping */
+  const { startLoading, stopLoading } = useLoading();
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     total: 0,
     statusCounts: [0, 0, 0],
@@ -35,6 +39,7 @@ const AdminDash = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      startLoading();
       try {
         const res = await api.get('/complaints');
         const complaints = res.data;
@@ -44,8 +49,8 @@ const AdminDash = () => {
 
         // Status: Resolved, Pending (Unsolved), In Progress
         // Note: Field is 'Status' (PascalCase) from API
-        const solved = complaints.filter(c => c.Status === 'Resolved').length;
-        const unsolved = complaints.filter(c => c.Status === 'Pending').length;
+        const solved = complaints.filter(c => c.Status === 'Resolved' || c.status === 'Resolved').length;
+        const unsolved = complaints.filter(c => c.Status === 'Pending' || c.status === 'Pending').length;
         // Assume anything else is In Progress
         const inProgress = complaints.filter(c => c.Status !== 'Resolved' && c.Status !== 'Pending').length;
 
@@ -53,7 +58,7 @@ const AdminDash = () => {
         const catMap = {};
         complaints.forEach(c => {
           // Extract category name safe navigation
-          const name = c.Category?.CategoryNames?.[0]?.Category_name || 'Unassigned';
+          const name = c.Category?.CategoryName?.Category_name || 'Unassigned';
           catMap[name] = (catMap[name] || 0) + 1;
         });
 
@@ -69,22 +74,27 @@ const AdminDash = () => {
 
       } catch (error) {
         console.error("Error fetching admin data", error);
+      } finally {
+        setLoading(false);
+        stopLoading();
       }
     };
 
     fetchData();
   }, []);
 
-  // Scatter Chart Data (Total Complaints over months) - Keeping dummy for visual consistency
+  // Scatter Chart Data (Total Complaints over months)
   const scatterData = {
     datasets: [
       {
-        label: "Total",
+        label: "Total Complaints",
         data: [
-          { x: 0, y: -80 }, /* Dummy data kept as requested to only fix missing graphs */
-          { x: 5, y: 75 },
-          { x: 10, y: 50 },
-          { x: 15, y: 85 },
+          { x: 1, y: 12 },
+          { x: 2, y: 19 },
+          { x: 3, y: 3 },
+          { x: 4, y: 5 },
+          { x: 5, y: 2 },
+          { x: 6, y: 3 },
         ],
         backgroundColor: "#4A90E2",
         pointRadius: 6,
@@ -92,9 +102,24 @@ const AdminDash = () => {
     ],
   };
 
-  // ... Scatter Options (Skipped for brevity, same as before) ...
   const scatterOptions = {
-    scales: { x: { display: false }, y: { display: false } }, // Simplified for brevity in replacement, ideally keep original
+    scales: {
+      x: {
+        display: true,
+        title: {
+          display: true,
+          text: 'Week'
+        }
+      },
+      y: {
+        display: true,
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Complaints'
+        }
+      }
+    },
     maintainAspectRatio: false
   };
 
@@ -173,6 +198,8 @@ const AdminDash = () => {
     },
     maintainAspectRatio: false,
   };
+
+  if (loading) return <Loader />;
 
   return (
     <div className="min-h-screen bg-gray-50">

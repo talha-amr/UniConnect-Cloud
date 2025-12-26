@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Plus, X, MoreHorizontal } from 'lucide-react';
 import api from '../api/axios';
+import Loader from './Loader';
+import { useLoading } from '../context/LoadingContext';
 import ComplaintModal from './ComplaintModal'; // 1. Import the modal
 
 const StudentComplaints = () => {
@@ -8,15 +10,22 @@ const StudentComplaints = () => {
     const [filteredComplaints, setFilteredComplaints] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
+    const { startLoading, stopLoading } = useLoading();
+    const [loading, setLoading] = useState(true);
 
     // Fetch complaints on load
     const fetchComplaints = async () => {
+        startLoading();
         try {
             const res = await api.get('/complaints/my');
             setComplaints(res.data);
             setFilteredComplaints(res.data);
         } catch (error) {
             console.error('Failed to fetch complaints', error);
+        } finally {
+            setLoading(false);
+            stopLoading();
         }
     };
 
@@ -37,7 +46,8 @@ const StudentComplaints = () => {
     const handleLodgeComplaint = async (formData) => {
         try {
             await api.post('/complaints', formData);
-            alert("Complaint Submitted Successfully!");
+            setIsModalOpen(false); // Close form
+            setShowSuccessModal(true); // Show success
             fetchComplaints();
         } catch (error) {
             console.error("Failed to submit complaint", error);
@@ -110,7 +120,11 @@ const StudentComplaints = () => {
 
                 {/* Table Body */}
                 <div className="flex-grow relative overflow-auto">
-                    {filteredComplaints.length > 0 ? (
+                    {loading ? (
+                        <div className="flex justify-center items-center h-48">
+                            <Loader />
+                        </div>
+                    ) : filteredComplaints.length > 0 ? (
                         filteredComplaints.map((complaint) => (
                             <div key={complaint.Complaint_ID} className="grid grid-cols-6 gap-4 p-5 border-b border-gray-100 text-sm items-center hover:bg-gray-50 transition-colors">
                                 <div className="col-span-1 text-gray-900 font-medium">#{complaint.Complaint_ID}</div>
@@ -152,7 +166,31 @@ const StudentComplaints = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleLodgeComplaint}
             />
-        </div>
+
+
+            {/* Success Modal */}
+            {
+                showSuccessModal && (
+                    <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black/50 backdrop-blur-sm">
+                        <div className="bg-white p-6 rounded-2xl shadow-xl w-80 text-center transform transition-all scale-100">
+                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Submitted!</h3>
+                            <p className="text-gray-600 mb-6">Your complaint has been lodged successfully.</p>
+                            <button
+                                onClick={() => setShowSuccessModal(false)}
+                                className="w-full bg-green-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-green-700 transition duration-200"
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 

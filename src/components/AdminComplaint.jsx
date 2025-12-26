@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Eye, UserPlus, X } from 'lucide-react';
 import api from '../api/axios';
+import { useLoading } from '../context/LoadingContext';
+import Loader from './Loader';
 
 const AdminComplaint = () => {
+  const { startLoading, stopLoading } = useLoading();
   const [complaints, setComplaints] = useState([]);
   const [staffList, setStaffList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,12 +14,24 @@ const AdminComplaint = () => {
   const [selectedStaffId, setSelectedStaffId] = useState('');
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
+
+  // Helper to safely get department name
+  const getDeptName = (c) => {
+    // Logic for hasOne (Object) vs hasMany (Array)
+    if (c.Category?.CategoryName) return c.Category.CategoryName.Category_name;
+    if (Array.isArray(c.Category?.CategoryNames) && c.Category.CategoryNames.length > 0) {
+      return c.Category.CategoryNames[0].Category_name;
+    }
+    return 'Unassigned';
+  };
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    startLoading();
     try {
       const [complaintsRes, categoriesRes] = await Promise.all([
         api.get('/complaints'), // Admin fetches all
@@ -28,6 +43,7 @@ const AdminComplaint = () => {
       console.error("Failed to fetch data", error);
     } finally {
       setLoading(false);
+      stopLoading();
     }
   };
 
@@ -45,14 +61,17 @@ const AdminComplaint = () => {
     if (!selectedStaffId) return alert("Select a department");
     try {
       await api.post(`/complaints/assign/${selectedComplaintId}`, { categoryId: selectedStaffId });
-      alert("Assigned to department successfully");
+      // Show success modal instead of alert
       setShowAssignModal(false);
+      setShowSuccessModal(true);
       fetchData();
     } catch (error) {
       console.error("Assign failed", error);
       alert("Failed to assign");
     }
   };
+
+  if (loading) return <Loader />;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 font-sans">
@@ -83,7 +102,7 @@ const AdminComplaint = () => {
                   <td className="px-6 py-4">{c.student ? c.student.Name : 'N/A'}</td>
                   <td className="px-6 py-4 font-medium text-gray-900">{c.Title}</td>
                   <td className="px-6 py-4">
-                    {c.Category?.CategoryNames?.[0]?.Category_name || <span className="text-gray-400 italic">Unassigned</span>}
+                    {getDeptName(c) !== 'Unassigned' ? getDeptName(c) : <span className="text-gray-400 italic">Unassigned</span>}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded text-xs ${c.Status === 'Resolved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -97,7 +116,7 @@ const AdminComplaint = () => {
                       className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
                       title="Assign to Staff"
                     >
-                      <UserPlus size={16} /> {c.Category ? 'Re-assign' : 'Assign'}
+                      <UserPlus size={16} /> {getDeptName(c) !== 'Unassigned' ? 'Re-assign' : 'Assign'}
                     </button>
                     <button
                       onClick={() => handleViewClick(c)}
@@ -136,6 +155,27 @@ const AdminComplaint = () => {
               <button onClick={() => setShowAssignModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
               <button onClick={handleAssignSubmit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Assign</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black/50 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-2xl shadow-xl w-80 text-center transform transition-all scale-100">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Success!</h3>
+            <p className="text-gray-600 mb-6">Department assigned successfully.</p>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full bg-green-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-green-700 transition duration-200"
+            >
+              Continue
+            </button>
           </div>
         </div>
       )}

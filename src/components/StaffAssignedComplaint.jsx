@@ -3,12 +3,13 @@ import { Search, X, MoreHorizontal, Eye } from 'lucide-react';
 
 import api from '../api/axios';
 
-const StaffAssignedComplaint = ({ complaints, loading }) => {
+const StaffAssignedComplaint = ({ complaints, loading, onRefresh }) => {
 
     // Safety check just in case
     const safeComplaints = complaints || [];
     const [selectedComplaint, setSelectedComplaint] = useState(null);
     const [newStatus, setNewStatus] = useState('Pending');
+    const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
 
     const handleActionClick = (complaint) => {
         setSelectedComplaint(complaint);
@@ -19,9 +20,10 @@ const StaffAssignedComplaint = ({ complaints, loading }) => {
         if (!selectedComplaint) return;
         try {
             await api.patch(`/complaints/${selectedComplaint.Complaint_ID}/status`, { status: newStatus });
-            alert("Status Updated Successfully");
+            // Show success modal and refresh data
+            setShowSuccessModal(true);
             setSelectedComplaint(null);
-            window.location.reload(); // Simple refresh to see changes
+            if (onRefresh) onRefresh();
         } catch (error) {
             console.error("Update failed", error);
             alert("Update Failed");
@@ -187,7 +189,29 @@ const StaffAssignedComplaint = ({ complaints, loading }) => {
                         </div>
                     </div>
                 )}
+
             </div>
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-2xl shadow-xl w-80 text-center transform transition-all scale-100">
+                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Success!</h3>
+                        <p className="text-gray-600 mb-6">Status updated successfully.</p>
+                        <button
+                            onClick={() => setShowSuccessModal(false)}
+                            className="w-full bg-green-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-green-700 transition duration-200"
+                        >
+                            Continue
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

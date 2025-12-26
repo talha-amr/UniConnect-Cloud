@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
+import { useLoading } from '../context/LoadingContext';
+import Loader from './Loader';
 
 const AdminAccountManagement = () => {
+  const { startLoading, stopLoading } = useLoading();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -10,6 +13,7 @@ const AdminAccountManagement = () => {
   }, []);
 
   const fetchUsers = async () => {
+    startLoading();
     try {
       const response = await api.get('/users');
       setAccounts(response.data);
@@ -17,6 +21,7 @@ const AdminAccountManagement = () => {
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
+      stopLoading();
     }
   };
 
@@ -26,13 +31,19 @@ const AdminAccountManagement = () => {
         await api.delete(`/users/${id}?type=${type}`);
         // Refresh list
         fetchUsers();
-        // Or filter locally: setAccounts(prev => prev.filter(acc => acc.id !== id));
       } catch (error) {
-        console.error('Error deleting user:', error);
-        alert('Failed to delete user');
+        if (error.response && error.response.status === 404) {
+          // User already deleted or not found, just remove from UI
+          setAccounts(prev => prev.filter(acc => acc.id !== id));
+        } else {
+          console.error('Error deleting user:', error);
+          alert('Failed to delete user');
+        }
       }
     }
   };
+
+  if (loading) return <Loader />;
 
   return (
     <div className="min-h-screen bg-gray-50">

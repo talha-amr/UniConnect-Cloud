@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import SlideNavbar from '../components/SlideNavbar';
 import StaffDashboardComp from '../components/StaffDashboardComp';
+import { useLoading } from '../context/LoadingContext';
+import Loader from '../components/Loader';
 
 const StaffDashboard = () => {
+    const { startLoading, stopLoading } = useLoading();
     const [assignedComplaints, setAssignedComplaints] = useState([]);
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
+            startLoading();
             try {
                 const [complaintsRes, userRes] = await Promise.all([
                     api.get('/complaints/assigned'),
@@ -18,6 +23,9 @@ const StaffDashboard = () => {
                 setUser(userRes.data);
             } catch (error) {
                 console.error('Failed to fetch staff data', error);
+            } finally {
+                setLoading(false);
+                stopLoading();
             }
         };
         fetchData();
@@ -25,7 +33,7 @@ const StaffDashboard = () => {
 
     return (
         <SlideNavbar>
-            <StaffDashboardComp user={user} complaints={assignedComplaints} />
+            {loading ? <Loader /> : <StaffDashboardComp user={user} complaints={assignedComplaints} />}
         </SlideNavbar>
     );
 };

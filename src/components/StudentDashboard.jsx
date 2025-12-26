@@ -6,6 +6,7 @@ import api from '../api/axios';
 const DashboardHome = ({ user, complaints = [] }) => {
     // 2. State to manage modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
 
     // Calculate stats
     const totalComplaints = complaints.length;
@@ -17,9 +18,9 @@ const DashboardHome = ({ user, complaints = [] }) => {
     const handleComplaintSubmit = async (formData) => {
         try {
             await api.post('/complaints', formData);
-            alert("Complaint Submitted Successfully!");
-            // Optionally trigger a refresh here if stats need to update immediately, 
-            // causing a re-fetch or parent refresh. For now, alert is sufficient.
+            // Show success modal instead of alert
+            setIsModalOpen(false); // Close the form modal first
+            setShowSuccessModal(true);
         } catch (error) {
             console.error("Failed to submit complaint", error);
             alert("Failed to submit complaint. Please try again.");
