@@ -27,18 +27,27 @@ app.get('/', (req, res) => {
 });
 
 // Sync Database and Start Server
-const PORT = process.env.PORT || 5000;
+// Export app for Vercel
+module.exports = app;
 
+// Sync Database and Start Server only if run directly
 const startServer = async () => {
-    await connectDB();
+    try {
+        await connectDB();
+        // Sync models (force: false creates tables if not exist, doesn't drop)
+        await sequelize.sync({ force: false });
+        console.log('Database synced');
 
-    // Sync models (force: false creates tables if not exist, doesn't drop)
-    await sequelize.sync({ force: false });
-    console.log('Database synced');
-
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-    });
+        const PORT = process.env.PORT || 5000;
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+    }
 };
 
-startServer();
+// Only start server if this file is run directly (not imported by Vercel)
+if (require.main === module) {
+    startServer();
+}
