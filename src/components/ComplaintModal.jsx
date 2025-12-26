@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, CheckSquare, Square } from 'lucide-react';
 import api from '../api/axios'; // Ensure API import
 
-const ComplaintModal = ({ isOpen, onClose, onSubmit }) => {
+const ComplaintModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
     // Form State matching your 'Complaint' table schema
     const [formData, setFormData] = useState({
         title: '',
@@ -140,9 +140,14 @@ const ComplaintModal = ({ isOpen, onClose, onSubmit }) => {
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 px-4 py-2.5 bg-orange-400 text-white font-medium rounded-lg hover:bg-orange-500 shadow-sm transition-colors"
+                            disabled={isSubmitting}
+                            className={`flex-1 px-4 py-2.5 bg-orange-400 text-white font-medium rounded-lg hover:bg-orange-500 shadow-sm transition-colors flex items-center justify-center ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
-                            Submit Complaint
+                            {isSubmitting ? (
+                                <div className="w-5 h-5 border-2 border-white rounded-full animate-spin border-t-transparent"></div>
+                            ) : (
+                                'Submit Complaint'
+                            )}
                         </button>
                     </div>
 

@@ -13,6 +13,7 @@ const StudentComplaints = () => {
     const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
     const { startLoading, stopLoading } = useLoading();
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Fetch complaints on load
     const fetchComplaints = async () => {
@@ -44,6 +45,7 @@ const StudentComplaints = () => {
     }, [searchTerm, complaints]);
 
     const handleLodgeComplaint = async (formData) => {
+        setIsSubmitting(true);
         try {
             await api.post('/complaints', formData);
             setIsModalOpen(false); // Close form
@@ -52,6 +54,8 @@ const StudentComplaints = () => {
         } catch (error) {
             console.error("Failed to submit complaint", error);
             alert("Failed to submit complaint. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -165,6 +169,7 @@ const StudentComplaints = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleLodgeComplaint}
+                isSubmitting={isSubmitting}
             />
 
 

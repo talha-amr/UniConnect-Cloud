@@ -15,6 +15,7 @@ const AdminComplaint = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
+  const [isAssigning, setIsAssigning] = useState(false);
 
   // Helper to safely get department name
   const getDeptName = (c) => {
@@ -59,6 +60,7 @@ const AdminComplaint = () => {
 
   const handleAssignSubmit = async () => {
     if (!selectedStaffId) return alert("Select a department");
+    setIsAssigning(true);
     try {
       await api.post(`/complaints/assign/${selectedComplaintId}`, { categoryId: selectedStaffId });
       // Show success modal instead of alert
@@ -68,6 +70,8 @@ const AdminComplaint = () => {
     } catch (error) {
       console.error("Assign failed", error);
       alert("Failed to assign");
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -152,8 +156,18 @@ const AdminComplaint = () => {
               ))}
             </select>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowAssignModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
-              <button onClick={handleAssignSubmit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Assign</button>
+              <button onClick={() => setShowAssignModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded" disabled={isAssigning}>Cancel</button>
+              <button
+                onClick={handleAssignSubmit}
+                className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center justify-center min-w-[80px] ${isAssigning ? 'opacity-70 cursor-not-allowed' : ''}`}
+                disabled={isAssigning}
+              >
+                {isAssigning ? (
+                  <div className="w-5 h-5 border-2 border-white rounded-full animate-spin border-t-transparent"></div>
+                ) : (
+                  'Assign'
+                )}
+              </button>
             </div>
           </div>
         </div>

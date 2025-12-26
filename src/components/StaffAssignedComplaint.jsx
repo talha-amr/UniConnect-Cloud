@@ -10,6 +10,7 @@ const StaffAssignedComplaint = ({ complaints, loading, onRefresh }) => {
     const [selectedComplaint, setSelectedComplaint] = useState(null);
     const [newStatus, setNewStatus] = useState('Pending');
     const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleActionClick = (complaint) => {
         setSelectedComplaint(complaint);
@@ -18,6 +19,7 @@ const StaffAssignedComplaint = ({ complaints, loading, onRefresh }) => {
 
     const handleUpdateSubmit = async () => {
         if (!selectedComplaint) return;
+        setIsSubmitting(true);
         try {
             await api.patch(`/complaints/${selectedComplaint.Complaint_ID}/status`, { status: newStatus });
             // Show success modal and refresh data
@@ -27,6 +29,8 @@ const StaffAssignedComplaint = ({ complaints, loading, onRefresh }) => {
         } catch (error) {
             console.error("Update failed", error);
             alert("Update Failed");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -183,8 +187,18 @@ const StaffAssignedComplaint = ({ complaints, loading, onRefresh }) => {
                             </div>
 
                             <div className="flex justify-end gap-2">
-                                <button onClick={() => setSelectedComplaint(null)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
-                                <button onClick={handleUpdateSubmit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Update</button>
+                                <button onClick={() => setSelectedComplaint(null)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded" disabled={isSubmitting}>Cancel</button>
+                                <button
+                                    onClick={handleUpdateSubmit}
+                                    className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center justify-center min-w-[80px] ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? (
+                                        <div className="w-5 h-5 border-2 border-white rounded-full animate-spin border-t-transparent"></div>
+                                    ) : (
+                                        'Update'
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -27,17 +27,21 @@ const AdminAccountManagement = () => {
 
   const handleDeleteAccount = async (id, type) => {
     if (window.confirm('Are you sure you want to delete this account?')) {
+      // Optimistic Update: Remove immediately
+      const previousAccounts = [...accounts];
+      setAccounts(prev => prev.filter(acc => acc.id !== id));
+
       try {
         await api.delete(`/users/${id}?type=${type}`);
-        // Refresh list
-        fetchUsers();
+        // No need to fetchUser() if successful, we already removed it.
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          // User already deleted or not found, just remove from UI
-          setAccounts(prev => prev.filter(acc => acc.id !== id));
+          // It was already gone, so our optimistic update was correct.
         } else {
           console.error('Error deleting user:', error);
           alert('Failed to delete user');
+          // Revert if it wasn't a 404
+          setAccounts(previousAccounts);
         }
       }
     }
