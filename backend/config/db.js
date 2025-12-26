@@ -15,7 +15,8 @@ const sequelize = new Sequelize(
                 require: true,
                 rejectUnauthorized: false
             }
-        }
+        },
+        dialectModule: require('mysql2')
     }
 );
 
