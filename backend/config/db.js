@@ -25,7 +25,8 @@ const connectDB = async () => {
         console.log('MySQL Database connected successfully.');
     } catch (error) {
         console.error('Unable to connect to the database:', error);
-        process.exit(1);
+        // Do not exit process in serverless environment, throw error instead so handler catches it
+        throw error;
     }
 };
 
