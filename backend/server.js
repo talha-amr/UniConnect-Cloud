@@ -26,6 +26,31 @@ app.get('/', (req, res) => {
     res.send('UniConnect API is running...');
 });
 
+// Debug Endpoint
+app.get('/api/debug', async (req, res) => {
+    try {
+        await sequelize.authenticate();
+        res.json({
+            status: 'success',
+            message: 'Database connection established',
+            url: req.url,
+            originalUrl: req.originalUrl,
+            headers: req.headers,
+            env: {
+                PORT: process.env.PORT,
+                DB_HOST: process.env.DB_HOST ? 'Defined' : 'Undefined',
+                // Do not expose secrets
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            message: 'Database connection failed',
+            error: error.message
+        });
+    }
+});
+
 // Sync Database and Start Server
 // Export app for Vercel
 module.exports = app;
