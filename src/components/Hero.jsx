@@ -7,14 +7,14 @@ const Hero = () => {
         {/* Main Hero Card */}
         <div className="bg-[#FFFFFF] rounded-3xl p-8  md:p-12 relative overflow-hidden">
           {/* Speech Bubble Tail */}
-          
+
           {/* Content Container */}
           <div className="text-center space-y-6">
             {/* People Illustration */}
             <div className="flex justify-center items-end mb-8">
-              <img 
-                src="/src/images/people.png" 
-                alt="People illustration" 
+              <img
+                src="/images/people.png"
+                alt="People illustration"
                 className="h-32 md:h-40 lg:h-48 object-contain"
               />
             </div>
