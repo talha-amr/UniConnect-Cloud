@@ -211,7 +211,7 @@ const AdminDash = () => {
         <h2 className="text-3xl font-bold mb-8">Dashboard</h2>
 
         {/* Top Row - Two Cards */}
-        <div className="grid grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Total Complaints Scatter Chart */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-start justify-between mb-4">
@@ -247,7 +247,7 @@ const AdminDash = () => {
         </div>
 
         {/* Bottom Row - Two Cards */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Department Pie Chart */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-start justify-between mb-4">

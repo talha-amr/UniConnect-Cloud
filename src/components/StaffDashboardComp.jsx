@@ -23,7 +23,7 @@ const StaffDashboardComp = ({ user, complaints = [] }) => {
             {/* 2. Main Content: Single Large White Box */}
             <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-sm p-10 min-h-[600px]">
 
-                <div className="space-y-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
                     {/* Stat 1: Complaints Solved */}
                     <StatItem

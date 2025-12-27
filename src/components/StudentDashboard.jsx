@@ -55,7 +55,7 @@ const DashboardHome = ({ user, complaints = [] }) => {
                 </button>
 
                 {/* Stats Section */}
-                <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     {/* Stat Item 1: Complaints Solved */}
                     <StatItem
@@ -72,11 +72,6 @@ const DashboardHome = ({ user, complaints = [] }) => {
                         description="Total number of complaints Lodged this semester."
                         icon={<FilePlus size={28} className="text-orange-400" />}
                     />
-
-                    {/* Carousel Indicator Dot */}
-                    <div className="flex justify-center py-2">
-                        <div className="w-2 h-2 bg-black rounded-full"></div>
-                    </div>
 
                     {/* Stat Item 3: Pending Complaints */}
                     <StatItem

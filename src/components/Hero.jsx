@@ -2,10 +2,10 @@ import React from 'react';
 
 const Hero = () => {
   return (
-    <div className="min-h-screen bg-[#1A2641] flex items-center justify-center py-[6rem]  md:py-[7vw]">
+    <div className="min-h-screen bg-[#1A2641] flex items-center justify-center py-20 md:py-[7vw]">
       <div className="my-container w-full">
         {/* Main Hero Card */}
-        <div className="bg-[#FFFFFF] rounded-3xl p-8  md:p-12 relative overflow-hidden">
+        <div className="bg-[#FFFFFF] rounded-3xl p-6 md:p-12 relative overflow-hidden">
           {/* Speech Bubble Tail */}
 
           {/* Content Container */}
@@ -42,7 +42,7 @@ const Hero = () => {
         </div>
 
         {/* Feature Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           {/* Easy Submission */}
           <div className="bg-[#FFFFFF] rounded-2xl p-6 text-center space-y-4">
             <div className="w-16 h-16 bg-[#1A2641] rounded-full mx-auto flex items-center justify-center">

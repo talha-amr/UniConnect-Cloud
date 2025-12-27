@@ -93,7 +93,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center pt-[6rem] md:pt-[8vw] pb-[2vw]">
+    <div className="min-h-screen bg-white flex items-center justify-center pt-24 pb-8 md:pt-[8vw] md:pb-[2vw]">
       <div className="my-container w-full">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
@@ -111,7 +111,7 @@ const Register = () => {
             <h3 className="text-lg font-semibold text-[#1A2641] mb-4 text-center">
               Select Account Type
             </h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <button
                 onClick={() => setUserType('student')}
                 className={`py-4 px-6 rounded-lg font-semibold transition-all duration-200 ${userType === 'student'

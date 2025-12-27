@@ -80,7 +80,7 @@ const AdminComplaint = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-8 font-sans">
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
           <h2 className="text-xl font-bold text-gray-800">All Complaints</h2>
           <div className="flex gap-2">
             {/* Search and Filter placeholders */}
@@ -88,7 +88,7 @@ const AdminComplaint = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-600">
+          <table className="w-full text-left text-sm text-gray-600 min-w-[800px]">
             <thead className="bg-gray-50 text-gray-900 font-medium border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4">ID</th>
@@ -139,8 +139,8 @@ const AdminComplaint = () => {
 
       {/* Assignment Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96 shadow-xl">
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-sm shadow-xl">
             <h3 className="text-lg font-bold mb-4">Assign Department</h3>
             <p className="text-sm text-gray-500 mb-4">Select the responsible department.</p>
             <select
