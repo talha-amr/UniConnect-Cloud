@@ -38,7 +38,13 @@ const AdminComplaint = () => {
         api.get('/complaints'), // Admin fetches all
         api.get('/complaints/categories') // Fetch departments/categories
       ]);
-      setComplaints(complaintsRes.data);
+      setComplaints(complaintsRes.data.sort((a, b) => {
+        // 1. Sort by Status (Resolved at bottom)
+        if (a.Status === 'Resolved' && b.Status !== 'Resolved') return 1;
+        if (a.Status !== 'Resolved' && b.Status === 'Resolved') return -1;
+        // 2. Sort by Date (Newest first)
+        return new Date(b.Created_at) - new Date(a.Created_at);
+      }));
       setStaffList(categoriesRes.data);
     } catch (error) {
       console.error("Failed to fetch data", error);
@@ -88,7 +94,8 @@ const AdminComplaint = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-600 min-w-[800px]">
+          {/* Desktop Table View */}
+          <table className="hidden md:table w-full text-left text-sm text-gray-600 min-w-[800px]">
             <thead className="bg-gray-50 text-gray-900 font-medium border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4">ID</th>
@@ -100,42 +107,93 @@ const AdminComplaint = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {complaints.map((c, index) => (
-                <tr key={c.Complaint_ID} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">#{index + 1}</td>
-                  <td className="px-6 py-4">{c.student ? c.student.Name : 'N/A'}</td>
-                  <td className="px-6 py-4 font-medium text-gray-900">{c.Title}</td>
-                  <td className="px-6 py-4">
-                    {getDeptName(c) !== 'Unassigned' ? getDeptName(c) : <span className="text-gray-400 italic">Unassigned</span>}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded text-xs ${c.Status === 'Resolved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                      }`}>
-                      {c.Status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right flex justify-end gap-3">
-                    <button
-                      onClick={() => handleAssignClick(c.Complaint_ID)}
-                      className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
-                      title="Assign to Staff"
-                    >
-                      <UserPlus size={16} /> {getDeptName(c) !== 'Unassigned' ? 'Re-assign' : 'Assign'}
-                    </button>
-                    <button
-                      onClick={() => handleViewClick(c)}
-                      className="text-gray-400 hover:text-gray-600"
-                      title="View Details"
-                    >
-                      <Eye size={16} />
-                    </button>
+              {complaints.length > 0 ? (
+                complaints.map((c, index) => (
+                  <tr key={c.Complaint_ID} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">#{index + 1}</td>
+                    <td className="px-6 py-4">{c.student ? c.student.Name : 'N/A'}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900 cursor-pointer hover:text-blue-600 hover:underline" onClick={() => handleViewClick(c)}>
+                      {c.Title}
+                    </td>
+                    <td className="px-6 py-4">
+                      {getDeptName(c) !== 'Unassigned' ? getDeptName(c) : <span className="text-gray-400 italic">Unassigned</span>}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded text-xs ${c.Status === 'Resolved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                        {c.Status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right flex justify-end gap-3">
+                      <button
+                        onClick={() => handleAssignClick(c.Complaint_ID)}
+                        className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                        title="Assign to Staff"
+                      >
+                        <UserPlus size={16} /> {getDeptName(c) !== 'Unassigned' ? 'Re-assign' : 'Assign'}
+                      </button>
+                      <button
+                        onClick={() => handleViewClick(c)}
+                        className="text-gray-400 hover:text-gray-600"
+                        title="View Details"
+                      >
+                        <Eye size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                    No complaints found.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden flex flex-col gap-4 p-4">
+            {complaints.map((c, index) => (
+              <div key={c.Complaint_ID} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                  <span className="font-bold text-gray-900">#{index + 1}</span>
+                  <span className={`px-2 py-1 rounded text-xs ${c.Status === 'Resolved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                    {c.Status}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900 line-clamp-2">{c.Title}</h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <span className="font-medium">Student:</span> {c.student ? c.student.Name : 'N/A'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    <span className="font-medium">Dept:</span> {getDeptName(c) !== 'Unassigned' ? getDeptName(c) : <span className="italic">Unassigned</span>}
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-2 border-t pt-3">
+                  <button
+                    onClick={() => handleAssignClick(c.Complaint_ID)}
+                    className="text-blue-500 hover:text-blue-700 text-sm flex items-center gap-1"
+                  >
+                    <UserPlus size={16} /> {getDeptName(c) !== 'Unassigned' ? 'Re-assign' : 'Assign'}
+                  </button>
+                  <button
+                    onClick={() => handleViewClick(c)}
+                    className="text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                  >
+                    <Eye size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
 
       {/* Assignment Modal */}
       {showAssignModal && (
@@ -201,7 +259,7 @@ const AdminComplaint = () => {
             <div className="flex justify-between items-start mb-6 border-b pb-4">
               <div>
                 <h3 className="text-2xl font-bold text-gray-800">Complaint Details</h3>
-                <span className="text-sm text-gray-500">#{selectedComplaint.Complaint_ID}</span>
+                <span className="text-sm text-gray-500">#{complaints.findIndex(c => c.Complaint_ID === selectedComplaint.Complaint_ID) + 1}</span>
               </div>
               <button onClick={() => setShowViewModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X size={24} />

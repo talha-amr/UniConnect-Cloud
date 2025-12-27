@@ -15,6 +15,9 @@ const StudentComplaints = () => {
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [selectedComplaint, setSelectedComplaint] = useState(null);
+
     // Fetch complaints on load
     const fetchComplaints = async () => {
         startLoading();
@@ -34,13 +37,21 @@ const StudentComplaints = () => {
         fetchComplaints();
     }, []);
 
-    // Filter logic
+    // Filter and Sort logic
     useEffect(() => {
-        const results = complaints.filter(complaint =>
+        let results = complaints.filter(complaint =>
             (complaint.Title && complaint.Title.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (complaint.category && complaint.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (complaint.Status && complaint.Status.toLowerCase().includes(searchTerm.toLowerCase()))
         );
+
+        // Sort: Resolved last, then new by date
+        results.sort((a, b) => {
+            if (a.Status === 'Resolved' && b.Status !== 'Resolved') return 1;
+            if (a.Status !== 'Resolved' && b.Status === 'Resolved') return -1;
+            return new Date(b.Created_at) - new Date(a.Created_at);
+        });
+
         setFilteredComplaints(results);
     }, [searchTerm, complaints]);
 
@@ -59,7 +70,19 @@ const StudentComplaints = () => {
         }
     };
 
+    const handleViewClick = (complaint) => {
+        setSelectedComplaint(complaint);
+        setShowViewModal(true);
+    };
+
+    const getCategoryName = (c) => {
+        return c.Category?.CategoryName?.Category_name || c.category || c.Category_ID || 'Uncategorized';
+    };
+
     const totalComplaints = complaints.length;
+
+    // Helper to get serial number
+    const getSerialNo = (id) => complaints.findIndex(c => c.Complaint_ID === id) + 1;
 
     return (
         <div className="min-h-screen bg-[#FFFDF7] p-8 font-sans text-gray-800">
@@ -114,7 +137,8 @@ const StudentComplaints = () => {
 
                 {/* Scrollable Table Container */}
                 <div className="overflow-x-auto">
-                    <div className="min-w-[800px]">
+                    {/* Desktop View */}
+                    <div className="min-w-[800px] hidden md:block">
                         {/* Table Header */}
                         <div className="grid grid-cols-6 gap-4 p-5 border-b border-gray-100 text-sm font-bold text-gray-900">
                             <div className="col-span-1">Complaint No.</div>
@@ -134,7 +158,7 @@ const StudentComplaints = () => {
                             ) : filteredComplaints.length > 0 ? (
                                 filteredComplaints.map((complaint) => {
                                     // Calculate global index to keep number stable during search
-                                    const serialNo = complaints.findIndex(c => c.Complaint_ID === complaint.Complaint_ID) + 1;
+                                    const serialNo = getSerialNo(complaint.Complaint_ID);
 
                                     return (
                                         <div key={complaint.Complaint_ID} className="grid grid-cols-6 gap-4 p-5 border-b border-gray-100 text-sm items-center hover:bg-gray-50 transition-colors">
@@ -142,8 +166,14 @@ const StudentComplaints = () => {
                                             <div className="col-span-1 text-gray-500">
                                                 {complaint.Created_at ? new Date(complaint.Created_at).toLocaleDateString() : 'N/A'}
                                             </div>
-                                            <div className="col-span-1 text-gray-500">{complaint.category || complaint.Category_ID}</div>
-                                            <div className="col-span-1 text-gray-900 truncate" title={complaint.Title}>{complaint.Title}</div>
+                                            <div className="col-span-1 text-gray-500">{getCategoryName(complaint)}</div>
+                                            <div
+                                                className="col-span-1 text-gray-900 truncate font-medium cursor-pointer hover:text-blue-600 hover:underline"
+                                                title="View Details"
+                                                onClick={() => handleViewClick(complaint)}
+                                            >
+                                                {complaint.Title}
+                                            </div>
                                             <div className="col-span-1 text-center">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${complaint.Status === 'Resolved' ? 'bg-green-100 text-green-700' :
                                                     complaint.Status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
@@ -153,7 +183,10 @@ const StudentComplaints = () => {
                                                 </span>
                                             </div>
                                             <div className="col-span-1 text-right">
-                                                <button className="text-gray-400 hover:text-gray-600">
+                                                <button
+                                                    onClick={() => handleViewClick(complaint)}
+                                                    className="text-gray-400 hover:text-gray-600"
+                                                >
                                                     <MoreHorizontal size={18} />
                                                 </button>
                                             </div>
@@ -165,6 +198,44 @@ const StudentComplaints = () => {
                             )}
                         </div>
                     </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden flex flex-col gap-4 p-4">
+                        {loading ? (
+                            <div className="flex justify-center items-center h-48">
+                                <Loader />
+                            </div>
+                        ) : filteredComplaints.length > 0 ? (
+                            filteredComplaints.map((complaint) => {
+                                const serialNo = getSerialNo(complaint.Complaint_ID);
+                                return (
+                                    <div key={complaint.Complaint_ID} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-3">
+                                        <div className="flex justify-between items-start">
+                                            <span className="font-bold text-gray-900">#{serialNo}</span>
+                                            <span className={`px-2 py-1 rounded text-xs ${complaint.Status === 'Resolved' ? 'bg-green-100 text-green-700' :
+                                                complaint.Status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                    'bg-blue-100 text-blue-700'
+                                                }`}>
+                                                {complaint.Status}
+                                            </span>
+                                        </div>
+
+                                        <div onClick={() => handleViewClick(complaint)} className="cursor-pointer">
+                                            <h3 className="font-semibold text-gray-900 line-clamp-2 hover:text-blue-600">{complaint.Title}</h3>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                <span className="font-medium">Category:</span> {getCategoryName(complaint)}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                <span className="font-medium">Date:</span> {complaint.Created_at ? new Date(complaint.Created_at).toLocaleDateString() : 'N/A'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )
+                            })
+                        ) : (
+                            <div className="p-8 text-center text-gray-500">No complaints found.</div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Pagination Dot */}
@@ -174,13 +245,70 @@ const StudentComplaints = () => {
 
             </div>
 
-            {/* 5. Render the Modal Component */}
+            {/* 4. Render the Lodge Complaint Modal */}
             <ComplaintModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleLodgeComplaint}
                 isSubmitting={isSubmitting}
             />
+
+            {/* 5. Render View Details Modal */}
+            {showViewModal && selectedComplaint && (
+                <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6 border-b pb-4">
+                            <div className='flex flex-col'>
+                                <h3 className="text-xl font-bold text-gray-800">Complaint Details</h3>
+                                <span className='text-sm text-gray-400 font-medium'>#{getSerialNo(selectedComplaint.Complaint_ID)}</span>
+                            </div>
+
+                            <button onClick={() => setShowViewModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 mb-6">
+                            <div>
+                                <h4 className="text-lg font-semibold text-gray-900">{selectedComplaint.Title}</h4>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    Logged on {selectedComplaint.Created_at ? new Date(selectedComplaint.Created_at).toLocaleString() : 'N/A'}
+                                </p>
+                            </div>
+
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Description</label>
+                                <p className="text-gray-700 whitespace-pre-wrap">{selectedComplaint.Description || 'No description provided.'}</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="block text-gray-500">Category</span>
+                                    <span className="font-medium text-gray-900">{getCategoryName(selectedComplaint)}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-gray-500">Status</span>
+                                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${selectedComplaint.Status === 'Resolved' ? 'bg-green-100 text-green-700' :
+                                        selectedComplaint.Status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                                            'bg-blue-100 text-blue-700'
+                                        }`}>
+                                        {selectedComplaint.Status}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end pt-2 border-t border-gray-100">
+                            <button
+                                onClick={() => setShowViewModal(false)}
+                                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
 
             {/* Success Modal */}
@@ -207,6 +335,7 @@ const StudentComplaints = () => {
             }
         </div >
     );
+
 };
 
 export default StudentComplaints;
