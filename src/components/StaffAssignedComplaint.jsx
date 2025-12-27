@@ -104,12 +104,12 @@ const StaffAssignedComplaint = ({ complaints, loading, onRefresh }) => {
                                 {loading ? (
                                     <div className="p-8 text-center text-gray-500">Loading...</div>
                                 ) : safeComplaints.length > 0 ? (
-                                    safeComplaints.map((complaint) => (
+                                    safeComplaints.map((complaint, index) => (
                                         <div key={complaint.Complaint_ID} className="flex items-center px-8 py-5 border-b border-gray-50 text-sm hover:bg-gray-50 transition-colors">
 
-                                            {/* ID */}
+                                            {/* ID - Showing Sequential Number */}
                                             <div className="flex-[1.5] font-medium text-gray-900">
-                                                #{complaint.Complaint_ID}
+                                                #{index + 1}
                                             </div>
 
                                             {/* Date */}

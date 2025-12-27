@@ -100,9 +100,9 @@ const AdminComplaint = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {complaints.map((c) => (
+              {complaints.map((c, index) => (
                 <tr key={c.Complaint_ID} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">#{c.Complaint_ID}</td>
+                  <td className="px-6 py-4">#{index + 1}</td>
                   <td className="px-6 py-4">{c.student ? c.student.Name : 'N/A'}</td>
                   <td className="px-6 py-4 font-medium text-gray-900">{c.Title}</td>
                   <td className="px-6 py-4">
