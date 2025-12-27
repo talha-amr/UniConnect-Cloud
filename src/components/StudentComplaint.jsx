@@ -132,29 +132,34 @@ const StudentComplaints = () => {
                                     <Loader />
                                 </div>
                             ) : filteredComplaints.length > 0 ? (
-                                filteredComplaints.map((complaint) => (
-                                    <div key={complaint.Complaint_ID} className="grid grid-cols-6 gap-4 p-5 border-b border-gray-100 text-sm items-center hover:bg-gray-50 transition-colors">
-                                        <div className="col-span-1 text-gray-900 font-medium">#{complaint.Complaint_ID}</div>
-                                        <div className="col-span-1 text-gray-500">
-                                            {complaint.Created_at ? new Date(complaint.Created_at).toLocaleDateString() : 'N/A'}
+                                filteredComplaints.map((complaint) => {
+                                    // Calculate global index to keep number stable during search
+                                    const serialNo = complaints.findIndex(c => c.Complaint_ID === complaint.Complaint_ID) + 1;
+
+                                    return (
+                                        <div key={complaint.Complaint_ID} className="grid grid-cols-6 gap-4 p-5 border-b border-gray-100 text-sm items-center hover:bg-gray-50 transition-colors">
+                                            <div className="col-span-1 text-gray-900 font-medium">#{serialNo}</div>
+                                            <div className="col-span-1 text-gray-500">
+                                                {complaint.Created_at ? new Date(complaint.Created_at).toLocaleDateString() : 'N/A'}
+                                            </div>
+                                            <div className="col-span-1 text-gray-500">{complaint.category || complaint.Category_ID}</div>
+                                            <div className="col-span-1 text-gray-900 truncate" title={complaint.Title}>{complaint.Title}</div>
+                                            <div className="col-span-1 text-center">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${complaint.Status === 'Resolved' ? 'bg-green-100 text-green-700' :
+                                                    complaint.Status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                        'bg-blue-100 text-blue-700'
+                                                    }`}>
+                                                    {complaint.Status}
+                                                </span>
+                                            </div>
+                                            <div className="col-span-1 text-right">
+                                                <button className="text-gray-400 hover:text-gray-600">
+                                                    <MoreHorizontal size={18} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="col-span-1 text-gray-500">{complaint.category || complaint.Category_ID}</div>
-                                        <div className="col-span-1 text-gray-900 truncate" title={complaint.Title}>{complaint.Title}</div>
-                                        <div className="col-span-1 text-center">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${complaint.Status === 'Resolved' ? 'bg-green-100 text-green-700' :
-                                                complaint.Status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                    'bg-blue-100 text-blue-700'
-                                                }`}>
-                                                {complaint.Status}
-                                            </span>
-                                        </div>
-                                        <div className="col-span-1 text-right">
-                                            <button className="text-gray-400 hover:text-gray-600">
-                                                <MoreHorizontal size={18} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             ) : (
                                 <div className="p-8 text-center text-gray-500">No complaints found.</div>
                             )}
