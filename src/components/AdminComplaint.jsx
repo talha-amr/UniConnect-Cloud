@@ -109,9 +109,19 @@ const AdminComplaint = () => {
             <tbody className="divide-y divide-gray-50">
               {complaints.length > 0 ? (
                 complaints.map((c, index) => (
-                  <tr key={c.Complaint_ID} className="hover:bg-gray-50">
+                  <tr key={c.Complaint_ID} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">#{index + 1}</td>
-                    <td className="px-6 py-4">{c.student ? c.student.Name : 'N/A'}</td>
+                    <td className="px-6 py-4">
+                      {/* Check if Anonymous */}
+                      {c.Is_anonymous ? (
+                        <span className="italic text-gray-400 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                          Anonymous
+                        </span>
+                      ) : (
+                        c.student ? c.student.Name : 'N/A'
+                      )}
+                    </td>
                     <td className="px-6 py-4 font-medium text-gray-900 cursor-pointer hover:text-blue-600 hover:underline" onClick={() => handleViewClick(c)}>
                       {c.Title}
                     </td>
@@ -167,7 +177,9 @@ const AdminComplaint = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 line-clamp-2">{c.Title}</h3>
                   <p className="text-xs text-gray-500 mt-1">
-                    <span className="font-medium">Student:</span> {c.student ? c.student.Name : 'N/A'}
+                    <span className="font-medium">Student:</span> {
+                      c.Is_anonymous ? <span className="italic">Anonymous</span> : (c.student ? c.student.Name : 'N/A')
+                    }
                   </p>
                   <p className="text-xs text-gray-500">
                     <span className="font-medium">Dept:</span> {getDeptName(c) !== 'Unassigned' ? getDeptName(c) : <span className="italic">Unassigned</span>}

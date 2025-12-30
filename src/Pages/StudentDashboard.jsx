@@ -12,29 +12,31 @@ const StudentDashboardPage = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const fetchData = async () => {
+        // Only show global loader on initial load, not background refresh
+        if (loading) startLoading();
+        try {
+            const [complaintsRes, userRes] = await Promise.all([
+                api.get('/complaints/my'),
+                api.get('/auth/me')
+            ]);
+            setComplaints(complaintsRes.data);
+            setUser(userRes.data);
+        } catch (error) {
+            console.error('Failed to fetch data', error);
+        } finally {
+            setLoading(false);
+            stopLoading();
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            startLoading();
-            try {
-                const [complaintsRes, userRes] = await Promise.all([
-                    api.get('/complaints/my'),
-                    api.get('/auth/me')
-                ]);
-                setComplaints(complaintsRes.data);
-                setUser(userRes.data);
-            } catch (error) {
-                console.error('Failed to fetch data', error);
-            } finally {
-                setLoading(false);
-                stopLoading();
-            }
-        };
         fetchData();
     }, []);
 
     return (
         <SlideNavbar>
-            {loading ? <Loader /> : <StudentDashboard complaints={complaints} user={user} />}
+            {loading ? <Loader /> : <StudentDashboard complaints={complaints} user={user} onRefresh={fetchData} />}
         </SlideNavbar>
     );
 };

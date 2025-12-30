@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, CheckSquare, Square } from 'lucide-react';
 import api from '../api/axios'; // Ensure API import
 
-const ComplaintModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
+const ComplaintModal = ({ isOpen, onClose, onSubmit }) => {
     // Form State matching your 'Complaint' table schema
     const [formData, setFormData] = useState({
         title: '',
@@ -11,6 +11,7 @@ const ComplaintModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
         isAnonymous: false
     });
 
+    const [isLocalSubmitting, setIsLocalSubmitting] = useState(false);
     const [categories, setCategories] = useState([]);
 
     React.useEffect(() => {
@@ -37,8 +38,11 @@ const ComplaintModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
         setFormData(prev => ({ ...prev, isAnonymous: !prev.isAnonymous }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        setIsLocalSubmitting(true);
+
         // This object matches your Schema structure for the API call
         const complaintPayload = {
             Title: formData.title,
@@ -46,11 +50,18 @@ const ComplaintModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
             Category_ID: parseInt(formData.categoryId),
             Is_anonymous: formData.isAnonymous ? 1 : 0, // Converting boolean to TINYINT/BOOL logic if needed
             Status: 'Pending', // Default as per schema
-            // Student_ID: user.id (You would typically inject the logged-in ID here)
         };
 
-        onSubmit(complaintPayload);
-        onClose(); // Close modal after submit
+        try {
+            // We assume onSubmit is an async function passed from parent that handles everything
+            await onSubmit(complaintPayload);
+        } catch (error) {
+            console.error("Submission error", error);
+        } finally {
+            // Only stop spinning if the modal is still open (though parent usually closes it on success)
+            // If parent closes modal, this component unmounts, so this state update is skipped/ignored.
+            setIsLocalSubmitting(false);
+        }
     };
 
     return (
@@ -140,10 +151,10 @@ const ComplaintModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
                         </button>
                         <button
                             type="submit"
-                            disabled={isSubmitting}
-                            className={`flex-1 px-4 py-2.5 bg-orange-400 text-white font-medium rounded-lg hover:bg-orange-500 shadow-sm transition-colors flex items-center justify-center ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            disabled={isLocalSubmitting}
+                            className={`flex-1 px-4 py-2.5 bg-orange-400 text-white font-medium rounded-lg hover:bg-orange-500 shadow-sm transition-colors flex items-center justify-center ${isLocalSubmitting ? 'opacity-70 cursor-wait' : ''}`}
                         >
-                            {isSubmitting ? (
+                            {isLocalSubmitting ? (
                                 <div className="w-5 h-5 border-2 border-white rounded-full animate-spin border-t-transparent"></div>
                             ) : (
                                 'Submit Complaint'

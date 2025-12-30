@@ -13,23 +13,24 @@ const StudentComplaints = () => {
     const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
     const { startLoading, stopLoading } = useLoading();
     const [loading, setLoading] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+
 
     const [showViewModal, setShowViewModal] = useState(false);
     const [selectedComplaint, setSelectedComplaint] = useState(null);
 
-    // Fetch complaints on load
-    const fetchComplaints = async () => {
-        startLoading();
+    // Fetch complaints
+    const fetchComplaints = async (isBackground = false) => {
+        if (!isBackground) startLoading();
         try {
             const res = await api.get('/complaints/my');
+            console.log("Fetched complaints count:", res.data.length);
             setComplaints(res.data);
             setFilteredComplaints(res.data);
         } catch (error) {
             console.error('Failed to fetch complaints', error);
         } finally {
             setLoading(false);
-            stopLoading();
+            if (!isBackground) stopLoading();
         }
     };
 
@@ -39,11 +40,17 @@ const StudentComplaints = () => {
 
     // Filter and Sort logic
     useEffect(() => {
-        let results = complaints.filter(complaint =>
-            (complaint.Title && complaint.Title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (complaint.category && complaint.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (complaint.Status && complaint.Status.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
+        if (!complaints) return;
+
+        const term = (searchTerm || '').toLowerCase();
+
+        let results = complaints.filter(complaint => {
+            const title = (complaint.Title || '').toLowerCase();
+            const category = (complaint.category || '').toLowerCase();
+            const status = (complaint.Status || '').toLowerCase();
+
+            return title.includes(term) || category.includes(term) || status.includes(term);
+        });
 
         // Sort: Resolved last, then new by date
         results.sort((a, b) => {
@@ -56,17 +63,27 @@ const StudentComplaints = () => {
     }, [searchTerm, complaints]);
 
     const handleLodgeComplaint = async (formData) => {
-        setIsSubmitting(true);
+        console.log("START handling lodge complaint");
         try {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log("Delay finished, posting data...");
+
             await api.post('/complaints', formData);
-            setIsModalOpen(false); // Close form
-            setShowSuccessModal(true); // Show success
-            fetchComplaints();
+            console.log("Post successful, fetching complaints...");
+
+            await fetchComplaints(true);
+            console.log("Fetch complaints finished, closing modal...");
+
+            setIsModalOpen(false);
+
+            setTimeout(() => {
+                console.log("Showing success modal NOW");
+                setShowSuccessModal(true);
+            }, 300);
+
         } catch (error) {
             console.error("Failed to submit complaint", error);
-            alert("Failed to submit complaint. Please try again.");
-        } finally {
-            setIsSubmitting(false);
+            alert("Failed to submit complaint. Server may be busy or input invalid.");
         }
     };
 
@@ -247,10 +264,10 @@ const StudentComplaints = () => {
 
             {/* 4. Render the Lodge Complaint Modal */}
             <ComplaintModal
+                key={isModalOpen ? 'modal-open' : 'modal-closed'}
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleLodgeComplaint}
-                isSubmitting={isSubmitting}
             />
 
             {/* 5. Render View Details Modal */}
@@ -312,10 +329,11 @@ const StudentComplaints = () => {
 
 
             {/* Success Modal */}
+            {/* Success Modal */}
             {
                 showSuccessModal && (
-                    <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black/50 backdrop-blur-sm">
-                        <div className="bg-white p-6 rounded-2xl shadow-xl w-80 text-center transform transition-all scale-100">
+                    <div className="fixed inset-0 flex items-center justify-center z-[100] bg-black/50 backdrop-blur-sm">
+                        <div className="bg-white p-6 rounded-2xl shadow-xl w-80 text-center transform transition-all scale-100 animate-in fade-in zoom-in duration-200">
                             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>

@@ -126,7 +126,7 @@ const StaffAssignedComplaint = ({ complaints, loading, onRefresh }) => {
 
                                             {/* Student Name */}
                                             <div className="flex-[2] text-gray-700 font-medium truncate pr-4">
-                                                {complaint.student ? complaint.student.Name : 'Unknown'}
+                                                {complaint.Is_anonymous ? <span className="italic text-gray-400">Anonymous</span> : (complaint.student ? complaint.student.Name : 'Unknown')}
                                             </div>
 
                                             {/* Title */}
@@ -188,7 +188,7 @@ const StaffAssignedComplaint = ({ complaints, loading, onRefresh }) => {
                                         <div onClick={() => handleActionClick(complaint)} className="cursor-pointer">
                                             <h3 className="font-semibold text-gray-900 line-clamp-2 hover:text-blue-600">{complaint.Title}</h3>
                                             <p className="text-xs text-gray-500 mt-1">
-                                                <span className="font-medium">Student:</span> {complaint.student ? complaint.student.Name : 'Unknown'}
+                                                <span className="font-medium">Student:</span> {complaint.Is_anonymous ? <span className="italic">Anonymous</span> : (complaint.student ? complaint.student.Name : 'Unknown')}
                                             </p>
                                             <p className="text-xs text-gray-500">
                                                 <span className="font-medium">Date:</span> {complaint.Created_at ? new Date(complaint.Created_at).toLocaleDateString() : 'N/A'}
@@ -246,7 +246,9 @@ const StaffAssignedComplaint = ({ complaints, loading, onRefresh }) => {
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div>
                                         <span className="block text-gray-500">Student Name</span>
-                                        <span className="font-medium text-gray-900">{selectedComplaint.student?.Name || 'N/A'}</span>
+                                        <span className="font-medium text-gray-900">
+                                            {selectedComplaint.Is_anonymous ? <span className="italic">Anonymous</span> : (selectedComplaint.student?.Name || 'N/A')}
+                                        </span>
                                     </div>
                                     <div>
                                         <span className="block text-gray-500">Student Email</span>

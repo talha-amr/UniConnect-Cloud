@@ -5,8 +5,25 @@ const { Student, Staff } = require('../models');
 // @access  Admin
 const getAllUsers = async (req, res) => {
     try {
-        const students = await Student.findAll();
-        const staff = await Staff.findAll();
+        // 1. Get Logged-in Admin's Domain
+        const adminEmail = req.user.Email; // Assuming req.user is populated by auth middleware
+        const adminDomain = adminEmail.substring(adminEmail.lastIndexOf("@"));
+
+        // 2. Fetch Users matching that domain
+        //    (Using Sequelize Op.like)
+        const { Op } = require('sequelize');
+
+        const students = await Student.findAll({
+            where: {
+                Email: { [Op.like]: `%${adminDomain}` }
+            }
+        });
+
+        const staff = await Staff.findAll({
+            where: {
+                Email: { [Op.like]: `%${adminDomain}` }
+            }
+        });
 
         const formattedStudents = students.map(user => ({
             id: user.Student_ID,

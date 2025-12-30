@@ -14,41 +14,87 @@ const seedDatabase = async () => {
         // Helper to hash password removed as hooks handle it
         const passwordPlain = '123456';
 
-        // Create Admin
+        // Create Admins for Two Universities
         await Admin.create({
-            Name: 'Admin User',
-            Email: 'admin@uniconnect.com',
+            Name: 'Admin PUCIT',
+            Email: 'admin@pucit.edu.pk',
             Password: passwordPlain
         });
 
-        // Create Staff
+        await Admin.create({
+            Name: 'Admin LUMS',
+            Email: 'admin@lums.edu.pk',
+            Password: passwordPlain
+        });
+
+        // Create Staff (Matched to Domain)
+        // --- PUCIT STAFF ---
         const staff1 = await Staff.create({
-            Name: 'Staff IT',
-            Email: 'staff.it@uniconnect.com',
+            Name: 'Staff IT PUCIT',
+            Email: 'staff.it@pucit.edu.pk',
+            Password: passwordPlain,
+            Department: 'IT'
+        });
+        await Staff.create({
+            Name: 'Staff Admin PUCIT',
+            Email: 'staff.admin@pucit.edu.pk',
+            Password: passwordPlain,
+            Department: 'Administration'
+        });
+
+        // --- LUMS STAFF ---
+        const staff2 = await Staff.create({
+            Name: 'Staff Maint LUMS',
+            Email: 'staff.maint@lums.edu.pk',
+            Password: passwordPlain,
+            Department: 'Maintenance'
+        });
+        await Staff.create({
+            Name: 'Staff IT LUMS',
+            Email: 'staff.it@lums.edu.pk',
             Password: passwordPlain,
             Department: 'IT'
         });
 
-        const staff2 = await Staff.create({
-            Name: 'Staff Maintenance',
-            Email: 'staff.maint@uniconnect.com',
-            Password: passwordPlain,
-            Department: 'Maintenance'
-        });
-
-        // Create Students
+        // Create Students (Matched to Domain)
+        // --- PUCIT STUDENTS ---
         const student1 = await Student.create({
-            Name: 'John Student',
-            Email: 'john@student.com',
+            Name: 'Ali PUCIT',
+            Email: 'ali@pucit.edu.pk',
+            Password: passwordPlain,
+            Department: 'CS'
+        });
+        await Student.create({
+            Name: 'Osman PUCIT',
+            Email: 'osman@pucit.edu.pk',
+            Password: passwordPlain,
+            Department: 'IT'
+        });
+        await Student.create({
+            Name: 'Zara PUCIT',
+            Email: 'zara@pucit.edu.pk',
             Password: passwordPlain,
             Department: 'CS'
         });
 
+        // --- LUMS STUDENTS ---
         const student2 = await Student.create({
-            Name: 'Alice Student',
-            Email: 'alice@student.com',
+            Name: 'Ayesha LUMS',
+            Email: 'ayesha@lums.edu.pk',
             Password: passwordPlain,
             Department: 'EE'
+        });
+        await Student.create({
+            Name: 'Bilal LUMS',
+            Email: 'bilal@lums.edu.pk',
+            Password: passwordPlain,
+            Department: 'Business'
+        });
+        await Student.create({
+            Name: 'Fatima LUMS',
+            Email: 'fatima@lums.edu.pk',
+            Password: passwordPlain,
+            Department: 'Law'
         });
 
         console.log('Users created...');

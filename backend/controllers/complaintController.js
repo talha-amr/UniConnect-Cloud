@@ -58,13 +58,32 @@ const getAllComplaints = async (req, res) => {
     try {
         let options = {
             include: [
-                { model: Student, as: 'student', attributes: ['Student_ID', 'Name', 'Email'] },
+                {
+                    model: Student,
+                    as: 'student',
+                    attributes: ['Student_ID', 'Name', 'Email']
+                },
                 {
                     model: Category,
                     include: [{ model: CategoryName }]
                 }
             ]
         };
+
+        // --- NEW: Dynamic Scope for Admin ---
+        // If user is Admin, only show complaints from Students in their domain
+        if (req.user.role === 'admin') {
+            const adminEmail = req.user.Email;
+            const domain = adminEmail.substring(adminEmail.lastIndexOf("@"));
+            const { Op } = require('sequelize');
+
+            // Find complaints where the associated Student has the same email domain
+            options.include[0].where = {
+                Email: { [Op.like]: `%${domain}` }
+            };
+            options.include[0].required = true; // Inner Join: Only complaints with matching students
+        }
+        // ------------------------------------
 
         if (req.user.role === 'staff') {
             // Staff should ideally see complaints assigned to their department or them personally
@@ -104,10 +123,25 @@ const getAssignedComplaints = async (req, res) => {
             return res.json([]); // No category matches this department
         }
 
+        // Match Staff Domain to Student Domain
+        const staffEmail = staff.Email;
+        const staffDomain = staffEmail.substring(staffEmail.lastIndexOf("@"));
+        const { Op } = require('sequelize');
+
         const complaints = await Complaint.findAll({
             where: { Category_ID: catNameEntry.Category_ID },
             include: [
-                { model: Student, as: 'student', attributes: ['Student_ID', 'Name', 'Email'] },
+                {
+                    model: Student,
+                    as: 'student',
+                    attributes: ['Student_ID', 'Name', 'Email'],
+                    // --- NEW: Filter by Domain ---
+                    where: {
+                        Email: { [Op.like]: `%${staffDomain}` }
+                    },
+                    required: true
+                    // -----------------------------
+                },
                 {
                     model: Category,
                     include: [{ model: CategoryName, attributes: ['Category_name'] }]

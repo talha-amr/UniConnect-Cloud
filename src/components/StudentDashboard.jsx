@@ -3,7 +3,7 @@ import { FolderPlus, FilePlus, FileText, Folder } from 'lucide-react';
 import ComplaintModal from './ComplaintModal';
 import api from '../api/axios';
 
-const DashboardHome = ({ user, complaints = [] }) => {
+const DashboardHome = ({ user, complaints = [], ...props }) => {
     // 2. State to manage modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
@@ -17,13 +17,23 @@ const DashboardHome = ({ user, complaints = [] }) => {
     // 3. Handle data coming back from the modal
     const handleComplaintSubmit = async (formData) => {
         try {
+            await new Promise(resolve => setTimeout(resolve, 1000));
             await api.post('/complaints', formData);
-            // Show success modal instead of alert
-            setIsModalOpen(false); // Close the form modal first
-            setShowSuccessModal(true);
+
+            // Trigger parent refresh if available
+            if (props.onRefresh) {
+                await props.onRefresh();
+            }
+
+            setIsModalOpen(false);
+
+            setTimeout(() => {
+                setShowSuccessModal(true);
+            }, 300);
+
         } catch (error) {
             console.error("Failed to submit complaint", error);
-            alert("Failed to submit complaint. Please try again.");
+            alert("Failed to submit complaint. please try again.");
         }
     };
 
@@ -81,11 +91,34 @@ const DashboardHome = ({ user, complaints = [] }) => {
                         icon={<FileText size={28} className="text-orange-400" />}
                     />
 
+                    {/* Success Modal */}
+                    {
+                        showSuccessModal && (
+                            <div className="fixed inset-0 flex items-center justify-center z-[100] bg-black/50 backdrop-blur-sm">
+                                <div className="bg-white p-6 rounded-2xl shadow-xl w-80 text-center transform transition-all scale-100 animate-in fade-in zoom-in duration-200">
+                                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Submitted!</h3>
+                                    <p className="text-gray-600 mb-6">Your complaint has been lodged successfully.</p>
+                                    <button
+                                        onClick={() => setShowSuccessModal(false)}
+                                        className="w-full bg-green-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-green-700 transition duration-200"
+                                    >
+                                        Continue
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    }
                 </div>
             </div>
 
             {/* 5. Render the Modal */}
             <ComplaintModal
+                key={isModalOpen ? 'home-modal-open' : 'home-modal-closed'}
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleComplaintSubmit}

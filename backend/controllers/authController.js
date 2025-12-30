@@ -29,6 +29,36 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
+        // --- NEW: University Verification Logic ---
+        // 1. Extract domain from the email (e.g., '@pucit.edu.pk')
+        const emailDomain = email.substring(email.lastIndexOf("@"));
+
+        // 2. Determine if this registration request is for a Student or Staff
+        //    (Admins are the ones who "create" the university, so they bypass this check
+        //    or are manually created first)
+        if (role !== 'admin') {
+            // 3. Search for an EXISTING Admin with this domain
+            //    (Using Op.like or similar Logic. Sequelize default is case-insensitive often)
+            const { Op } = require('sequelize'); // Make sure to import Op at top if not present, or use direct query
+
+            // We need to fetch ALL admins and check domain JS side if we want to be safe and simple
+            // Or use SQL 'LIKE %domain'
+            const adminExists = await Admin.findOne({
+                where: {
+                    Email: {
+                        [require('sequelize').Op.like]: `%${emailDomain}`
+                    }
+                }
+            });
+
+            if (!adminExists) {
+                return res.status(400).json({
+                    message: `University not registered for domain ${emailDomain}. Please contact your administrator.`
+                });
+            }
+        }
+        // ------------------------------------------
+
         const userData = {
             Name: name,
             Email: email,
